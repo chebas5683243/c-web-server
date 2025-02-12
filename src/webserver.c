@@ -1,9 +1,13 @@
+#include <cstring>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+#include "format.h"
 
 #define PORT 42069
 #define BACKLOG 50
@@ -58,29 +62,31 @@ void setMaxRequests(int server_fd) {
   }
 }
 
-void processRequest(int client_fd) {
+void* processRequest(void* args) {
   static char buffer[10000];
+  int client_fd = (intptr_t)args;
 
-  puts("-----------------------------------\nConnection accepted\n-----------------------------------\n");
+  printSection("Connection accepted");
 
   ssize_t count = recv(client_fd, buffer, sizeof(buffer), 0);
 
   if(count == -1) {
     perror("Failed to read from socket");
     close(client_fd);
-    return;
+    return NULL;
   }
 
   if (count == 0) {
     puts("Looks like connection has been closed.");
     close(client_fd);
-    return;
+    return NULL;
   }
 
   printf("Count: %d\n", (int)count);
 
-  puts("-----------------------------------");
+  printSeparator();
   printf("%s", buffer);
+  printf("%d", client_fd);
 
   const char *response =
     "HTTP/1.1 200 OK\r\n"
@@ -91,11 +97,12 @@ void processRequest(int client_fd) {
 
   send(client_fd, response, strlen(response), 0);
 
-  sleep(4);
-  send(client_fd, response, strlen(response), 0);
+  printSection("Connection closed");
+  puts("\n");
 
-  puts("-----------------------------------\nConnection closed\n-----------------------------------\n\n\n");
   close(client_fd);
+
+  return NULL;
 }
 
 void serve(int server_fd) {
@@ -107,11 +114,21 @@ void serve(int server_fd) {
 
     if (client_fd < 0) {
       perror("Accept failed");
-      close(server_fd);
-      exit(EXIT_FAILURE);
     }
 
-    processRequest(client_fd);
+    pthread_t thread;
+
+    if (pthread_create(&thread, NULL, processRequest, (void *)(intptr_t)client_fd) < 0) {
+      perror("Thread request creation failed");
+      exit(EXIT_FAILURE);
+      close(client_fd);
+    }
+
+    if (pthread_detach(thread)) {
+      perror("Thread request detach failed");
+      exit(EXIT_FAILURE);
+      close(client_fd);
+    }
   }
 }
 
