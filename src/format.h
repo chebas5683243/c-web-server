@@ -1,2 +1,2 @@
-void printSeparator();
-void printSection(char*);
+void print_separator();
+void print_section(char*);

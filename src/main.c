@@ -1,7 +1,9 @@
 #include "webserver.h"
 
 int main() {
-  listenAndServe();
+  struct Server *server = server_new();
+
+  server->listenAndServe();
   return 0;
 }
 

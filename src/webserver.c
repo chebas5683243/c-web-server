@@ -1,4 +1,4 @@
-#include <cstring>
+#include <string.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -8,11 +8,12 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include "format.h"
+#include "webserver.h"
 
 #define PORT 42069
 #define BACKLOG 50
 
-int createSocket() {
+int create_socket() {
   int server_fd;
   server_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (server_fd == -1) {
@@ -29,7 +30,7 @@ int createSocket() {
   return server_fd;
 }
 
-struct sockaddr_in defineServerAddress(){
+struct sockaddr_in define_server_address(){
   struct sockaddr_in server_addr;
 
   server_addr.sin_family = AF_INET;
@@ -39,12 +40,12 @@ struct sockaddr_in defineServerAddress(){
   return server_addr;
 }
 
-void tracePid() {
+void trace_pid() {
   pid_t pid = getpid();
   printf("Process ID: %d\n", pid);
 }
 
-void bindSocket(int server_fd, struct sockaddr_in* server_addr_pt) {
+void bind_socket(int server_fd, struct sockaddr_in* server_addr_pt) {
   if (bind(server_fd, (struct sockaddr *) server_addr_pt, sizeof(*server_addr_pt)) < 0) {
     perror("Bind failed");
     close(server_fd);
@@ -54,7 +55,7 @@ void bindSocket(int server_fd, struct sockaddr_in* server_addr_pt) {
   printf("Server listening on port %d\n", PORT);
 }
 
-void setMaxRequests(int server_fd) {
+void set_max_requests(int server_fd) {
   if (listen(server_fd, BACKLOG)) {
     perror("Listen failed");
     close(server_fd);
@@ -62,11 +63,11 @@ void setMaxRequests(int server_fd) {
   }
 }
 
-void* processRequest(void* args) {
+void* process_request(void* args) {
   static char buffer[10000];
   int client_fd = (intptr_t)args;
 
-  printSection("Connection accepted");
+  print_section("Connection accepted");
 
   ssize_t count = recv(client_fd, buffer, sizeof(buffer), 0);
 
@@ -84,7 +85,7 @@ void* processRequest(void* args) {
 
   printf("Count: %d\n", (int)count);
 
-  printSeparator();
+  print_separator();
   printf("%s", buffer);
   printf("%d", client_fd);
 
@@ -97,7 +98,7 @@ void* processRequest(void* args) {
 
   send(client_fd, response, strlen(response), 0);
 
-  printSection("Connection closed");
+  print_section("Connection closed");
   puts("\n");
 
   close(client_fd);
@@ -118,7 +119,7 @@ void serve(int server_fd) {
 
     pthread_t thread;
 
-    if (pthread_create(&thread, NULL, processRequest, (void *)(intptr_t)client_fd) < 0) {
+    if (pthread_create(&thread, NULL, process_request, (void *)(intptr_t)client_fd) < 0) {
       perror("Thread request creation failed");
       exit(EXIT_FAILURE);
       close(client_fd);
@@ -132,15 +133,22 @@ void serve(int server_fd) {
   }
 }
 
-void listenAndServe() {
-  tracePid();
-  int server_fd = createSocket();
-  struct sockaddr_in server_addr = defineServerAddress();
+void listen_and_serve() {
+  trace_pid();
+  int server_fd = create_socket();
+  struct sockaddr_in server_addr = define_server_address();
 
-  bindSocket(server_fd, &server_addr);
-  setMaxRequests(server_fd);
+  bind_socket(server_fd, &server_addr);
+  set_max_requests(server_fd);
 
   serve(server_fd);
 
   close(server_fd);
+}
+
+
+struct Server* server_new() {
+  struct Server* server;
+  server->listenAndServe = listen_and_serve;
+  return server;
 }

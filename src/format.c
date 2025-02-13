@@ -1,11 +1,11 @@
 #include <stdio.h>
 
-void printSeparator() {
+void print_separator() {
   puts("-----------------------------------");
 }
 
-void printSection(char *sectionName){
-  printSeparator();
+void print_section(char *sectionName){
+  print_separator();
   printf("%s\n", sectionName);
-  printSeparator();
+  print_separator();
 }
