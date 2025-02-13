@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>  // Required for malloc
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -146,9 +147,11 @@ void listen_and_serve() {
   close(server_fd);
 }
 
-
 struct Server* server_new() {
-  struct Server* server;
+  struct Server* server = malloc(sizeof(struct Server));
+  if (!server) {
+    return NULL;
+  }
   server->listenAndServe = listen_and_serve;
   return server;
 }
