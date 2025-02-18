@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct Server *server;
+struct server_t *server;
 
 void handle_sigint() {
   printf("\nCaught SIGINT! Cleaning up...\n");
@@ -16,11 +16,11 @@ void handle_sigint() {
 
 int main() {
   signal(SIGINT, handle_sigint);
-  struct Server *server = server_new();
+  struct server_t *server = server_new();
 
   if (!server) return 1;
 
-  server->listenAndServe();
+  server->listen_and_serve();
 
   free(server);
   return 0;

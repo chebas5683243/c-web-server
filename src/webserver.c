@@ -1,9 +1,7 @@
 #include <string.h>
-#include <stdlib.h>  // Required for malloc
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -147,11 +145,11 @@ void listen_and_serve() {
   close(server_fd);
 }
 
-struct Server* server_new() {
-  struct Server* server = malloc(sizeof(struct Server));
+struct server_t* server_new() {
+  struct server_t* server = malloc(sizeof(struct server_t));
   if (!server) {
     return NULL;
   }
-  server->listenAndServe = listen_and_serve;
+  server->listen_and_serve = listen_and_serve;
   return server;
 }
