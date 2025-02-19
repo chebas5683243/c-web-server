@@ -1,10 +1,15 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-struct server_t {
-  void (*listen_and_serve)();
-};
+#include "router.h"
 
-struct server_t* server_new();
+typedef struct {
+  router_t* router;
+  int port;
+} server_t;
+
+server_t* server_new(int, router_t*);
+void server_run(server_t*);
+void server_free(server_t*);
 
 #endif

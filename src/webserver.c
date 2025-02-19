@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include "format.h"
+#include "router.h"
 #include "webserver.h"
 
 #define PORT 42069
@@ -29,12 +30,12 @@ int create_socket() {
   return server_fd;
 }
 
-struct sockaddr_in define_server_address(){
+struct sockaddr_in define_server_address(int port){
   struct sockaddr_in server_addr;
 
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = INADDR_ANY;
-  server_addr.sin_port = htons(PORT);
+  server_addr.sin_port = htons(port);
 
   return server_addr;
 }
@@ -132,10 +133,10 @@ void serve(int server_fd) {
   }
 }
 
-void listen_and_serve() {
+void server_run(server_t* server) {
   trace_pid();
   int server_fd = create_socket();
-  struct sockaddr_in server_addr = define_server_address();
+  struct sockaddr_in server_addr = define_server_address(server->port);
 
   bind_socket(server_fd, &server_addr);
   set_max_requests(server_fd);
@@ -145,11 +146,16 @@ void listen_and_serve() {
   close(server_fd);
 }
 
-struct server_t* server_new() {
-  struct server_t* server = malloc(sizeof(struct server_t));
+server_t* server_new(int port, router_t* router) {
+  server_t* server = malloc(sizeof(server_t));
   if (!server) {
     return NULL;
   }
-  server->listen_and_serve = listen_and_serve;
+  server->port = port;
+  server->router = router;
   return server;
+}
+
+void server_free(server_t* server) {
+  router_free(server->router);
 }

@@ -18,22 +18,15 @@ typedef struct {
 } route_t;
 
 typedef struct {
-  route_t* routes;
-  void (*add_route)(const char* method, const char* resource, http_handler_t handler);
-  void (*prepare)();
-} routes_t;
-
-typedef struct {
-  routes_t* routes;
-
-  void (*http_get)(const char* resource, http_handler_t handler);
-  void (*http_patch)(const char* resource, http_handler_t handler);
-  void (*http_post)(const char* resource, http_handler_t handler);
-  void (*http_delete)(const char* resource, http_handler_t handler);
-
-  void (*prepare)();
+  route_t** routes;
+  int route_count;
+  int capacity;
 } router_t;
 
 router_t* router_new();
+route_t* route_new(const char* method, const char* resource, http_handler_t handler);
+void router_add_route(router_t* router, route_t* route);
+void router_prepare();
+void router_free(router_t*);
 
 #endif
