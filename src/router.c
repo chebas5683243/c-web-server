@@ -50,12 +50,12 @@ void router_add_route(router_t* router, route_t* route) {
   router->route_count++;
 }
 
-void router_prepare();
+void router_prepare(router_t*);
 
 void route_free(route_t* route) {
   if (!route) return;
-  free(route->method);
-  free(route->resource);
+  if (route->method) free(route->method);
+  if (route->resource) free(route->resource);
   free(route);
 }
 
@@ -66,6 +66,8 @@ void router_free(router_t* router) {
     route_free(router->routes[i]);
   }
 
-  free(router->routes);
+  if (router->routes) {
+    free(router->routes);
+  }
   free(router);
 }

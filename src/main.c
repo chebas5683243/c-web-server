@@ -8,6 +8,10 @@
 
 server_t *server;
 
+void get_hello_world(http_request_t* req, http_response_t* res) {
+  puts("Hello World! wow");
+}
+
 void handle_sigint() {
   printf("\nCaught SIGINT! Cleaning up...\n");
   if (server) {
@@ -21,12 +25,13 @@ int main() {
   signal(SIGINT, handle_sigint);
 
   router_t* router = router_new();
+
+  router_add_route(router, route_new("GET", "/hello-world", get_hello_world));
+
   server = server_new(PORT, router);
   if (!server) return 1;
 
   server_run(server);
-
-  server_free(server);
 
   return 0;
 }
