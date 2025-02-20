@@ -5,6 +5,11 @@
 
 typedef struct {
   router_t* router;
+  int socket_fd;
+} request_context_t;
+
+typedef struct {
+  router_t* router;
   int port;
 } server_t;
 

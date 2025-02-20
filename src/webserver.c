@@ -7,15 +7,10 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include "format.h"
-#include "router.h"
+#include "http-helper.h"
 #include "webserver.h"
 
 #define BACKLOG 50
-
-typedef struct {
-  router_t* router;
-  int socket_fd;
-} request_context_t;
 
 void trace_pid() {
   pid_t pid = getpid();
@@ -88,7 +83,11 @@ void* process_request(void* args) {
 
   print_separator();
   printf("%s", buffer);
-  printf("%d", ctx->socket_fd);
+
+  http_request_t request;
+  parse_http_request(buffer, &request);
+
+  print_http_request(&request);
 
   const char *response =
     "HTTP/1.1 200 OK\r\n"
@@ -97,7 +96,7 @@ void* process_request(void* args) {
     "\r\n"
     "Hello, World!";
 
-  ctx->router->routes[0]->handler(NULL, NULL);
+  ctx->router->routes[0]->handler(&request, NULL);
 
   send(ctx->socket_fd, response, strlen(response), 0);
 

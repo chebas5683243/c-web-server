@@ -1,4 +1,3 @@
-#include "router.h"
 #include "webserver.h"
 #include <signal.h>
 #include <stdlib.h>
@@ -9,6 +8,7 @@
 server_t *server;
 
 void get_hello_world(http_request_t* req, http_response_t* res) {
+  puts(req->resource);
   puts("Hello World! wow");
 }
 

@@ -1,9 +1,7 @@
 #ifndef ROUTER_H
 #define ROUTER_H
 
-typedef struct {
-
-} http_request_t;
+#include "http-helper.h"
 
 typedef struct {
 
