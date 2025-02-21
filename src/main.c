@@ -1,3 +1,4 @@
+#include "router.h"
 #include "webserver.h"
 #include <signal.h>
 #include <stdlib.h>
@@ -27,6 +28,13 @@ int main() {
   router_t* router = router_new();
 
   router_add_route(router, route_new("GET", "/hello-world", get_hello_world));
+  router_add_route(router, route_new("GET", "/", get_hello_world));
+  router_add_route(router, route_new("GET", "/atest", get_hello_world));
+  router_add_route(router, route_new("POST", "/test", get_hello_world));
+  router_add_route(router, route_new("DELETE", "/dtest", get_hello_world));
+  router_add_route(router, route_new("GET", "/ztest", get_hello_world));
+
+  router_prepare(router);
 
   server = server_new(PORT, router);
   if (!server) return 1;

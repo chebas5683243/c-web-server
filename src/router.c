@@ -50,7 +50,31 @@ void router_add_route(router_t* router, route_t* route) {
   router->route_count++;
 }
 
-void router_prepare(router_t*);
+int routeCmp(const void* r1, const void* r2) {
+  route_t* route1 = *(route_t**) r1;
+  route_t* route2 = *(route_t**) r2;
+
+  int method_cmp = strcmp(route1->method, route2->method);
+
+  if (method_cmp == 0) {
+    return strcmp(route1->resource, route2->resource);
+  }
+
+  return method_cmp;
+}
+
+void print_routes(router_t* router) {
+  for(int i = 0; i < router->route_count; i++) {
+    printf("%s %s\n", router->routes[i]->method, router->routes[i]->resource);
+  }
+}
+
+void router_prepare(router_t* router) {
+  print_routes(router);
+  qsort(router->routes, router->route_count, sizeof(route_t*), routeCmp);
+  puts("---");
+  print_routes(router);
+}
 
 void route_free(route_t* route) {
   if (!route) return;
