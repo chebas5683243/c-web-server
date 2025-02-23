@@ -23,23 +23,23 @@ void handle_sigint() {
 }
 
 int main() {
-  signal(SIGINT, handle_sigint);
+  // signal(SIGINT, handle_sigint);
 
-  router_t* router = router_new();
+  // router_t* router = router_new();
 
-  router_add_route(router, route_new("GET", "/hello-world", get_hello_world));
-  router_add_route(router, route_new("GET", "/", get_hello_world));
-  router_add_route(router, route_new("GET", "/atest", get_hello_world));
-  router_add_route(router, route_new("POST", "/test", get_hello_world));
-  router_add_route(router, route_new("DELETE", "/dtest", get_hello_world));
-  router_add_route(router, route_new("GET", "/ztest", get_hello_world));
+  // router_add_route(router, route_new("GET", "/hello-world", get_hello_world));
+  // router_add_route(router, route_new("GET", "/", get_hello_world));
+  // router_add_route(router, route_new("GET", "/atest", get_hello_world));
+  // router_add_route(router, route_new("POST", "/test", get_hello_world));
+  // router_add_route(router, route_new("DELETE", "/dtest", get_hello_world));
+  // router_add_route(router, route_new("GET", "/ztest", get_hello_world));
 
-  router_prepare(router);
+  // router_prepare(router);
 
-  server = server_new(PORT, router);
-  if (!server) return 1;
+  // server = server_new(PORT, router);
+  // if (!server) return 1;
 
-  server_run(server);
+  // server_run(server);
 
   return 0;
 }

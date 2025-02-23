@@ -83,7 +83,6 @@ void* process_request(void* args) {
   printf("Count: %d\n", (int)count);
 
   print_separator();
-  printf("%s", buffer);
 
   http_request_t request;
   parse_http_request(buffer, &request);
@@ -92,14 +91,12 @@ void* process_request(void* args) {
 
   const char *response =
     "HTTP/1.1 200 OK\r\n"
-    "Content-Type: text/plain\r\n"
+    "Content-Type: application/json\r\n"
     "Content-Length: 13\r\n"
     "\r\n"
-    "Hello, World!";
+    "{\"test\": 123}";
 
-  printf("Length: %d", ctx->router->route_count);
   http_handler_t handler = get_request_handler(ctx->router, &request);
-
 
   if (handler) handler(&request, NULL);
   else puts("Invalid path");
