@@ -24,7 +24,8 @@ typedef struct {
 router_t* router_new();
 route_t* route_new(const char* method, const char* resource, http_handler_t handler);
 void router_add_route(router_t* router, route_t* route);
-void router_prepare(router_t*);
-void router_free(router_t*);
+void router_prepare(router_t* router);
+void router_free(router_t* router);
+http_handler_t get_request_handler(router_t* router, http_request_t* request);
 
 #endif

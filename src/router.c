@@ -1,4 +1,5 @@
 #include "router.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,7 +51,7 @@ void router_add_route(router_t* router, route_t* route) {
   router->route_count++;
 }
 
-int routeCmp(const void* r1, const void* r2) {
+int route_cmp(const void* r1, const void* r2) {
   route_t* route1 = *(route_t**) r1;
   route_t* route2 = *(route_t**) r2;
 
@@ -70,10 +71,10 @@ void print_routes(router_t* router) {
 }
 
 void router_prepare(router_t* router) {
-  print_routes(router);
-  qsort(router->routes, router->route_count, sizeof(route_t*), routeCmp);
-  puts("---");
-  print_routes(router);
+  // print_routes(router);
+  qsort(router->routes, router->route_count, sizeof(route_t*), route_cmp);
+  // puts("---");
+  // print_routes(router);
 }
 
 void route_free(route_t* route) {
@@ -94,4 +95,18 @@ void router_free(router_t* router) {
     free(router->routes);
   }
   free(router);
+}
+
+http_handler_t get_request_handler(router_t* router, http_request_t* request) {
+  route_t* key = route_new(request->method, request->resource, NULL);
+
+  route_t** match = (route_t**)bsearch(&key, router->routes, router->route_count, sizeof(route_t*), route_cmp);
+
+  free(key);
+
+  if (match) {
+    return (*match)->handler;
+  }
+
+  return NULL;
 }

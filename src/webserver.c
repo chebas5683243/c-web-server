@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include "format.h"
 #include "http-helper.h"
+#include "router.h"
 #include "webserver.h"
 
 #define BACKLOG 50
@@ -96,7 +97,12 @@ void* process_request(void* args) {
     "\r\n"
     "Hello, World!";
 
-  ctx->router->routes[0]->handler(&request, NULL);
+  printf("Length: %d", ctx->router->route_count);
+  http_handler_t handler = get_request_handler(ctx->router, &request);
+
+
+  if (handler) handler(&request, NULL);
+  else puts("Invalid path");
 
   send(ctx->socket_fd, response, strlen(response), 0);
 
