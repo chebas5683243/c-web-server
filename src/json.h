@@ -53,5 +53,6 @@ json_value_t* json_new_bool(int);
 json_value_t* json_new_array();
 void json_object_add(json_value_t*, char*, json_value_t*);
 void json_array_add(json_value_t*, json_value_t*);
+void json_free(json_object_t*);
 
 #endif
