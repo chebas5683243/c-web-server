@@ -1,5 +1,6 @@
 #include "router.h"
 #include "webserver.h"
+#include "json.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,6 +24,29 @@ void handle_sigint() {
 }
 
 int main() {
+  json_value_t* addr = json_new_object();
+  json_object_add(addr, "country", json_new_string("US"));
+  json_object_add(addr, "state", json_new_string("California"));
+  json_object_add(addr, "city", json_new_string("Corona"));
+  json_object_add(addr, "number", json_new_int(123));
+
+  json_value_t* nicknames = json_new_array();
+  json_array_add(nicknames, json_new_string("Coder"));
+  json_array_add(nicknames, json_new_string("Coder2"));
+
+  json_value_t* user = json_new_object();
+  json_object_add(user, "address", addr);
+  json_object_add(user, "nicknames", nicknames);
+  json_object_add(user, "married", json_new_bool(0));
+  json_object_add(user, "age", json_new_int(18));
+  json_object_add(user, "heigth", json_new_decimal(1.95));
+  json_object_add(user, "additional-info", json_new_null());
+
+  json_print(user);
+
+  json_free(user);
+
+
   // signal(SIGINT, handle_sigint);
 
   // router_t* router = router_new();

@@ -1,8 +1,9 @@
 #include "json.h"
-#include <ios>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// JSON NEW
 
 json_value_t* json_new_object(){
   json_value_t* object = (json_value_t*)malloc(sizeof(json_value_t));
@@ -21,7 +22,7 @@ json_value_t* json_new_object(){
   return object;
 }
 
-json_value_t* json_new_int(int integer) {
+json_value_t* json_new_int(long integer) {
   json_value_t* value = (json_value_t*)malloc(sizeof(json_value_t));
   if (!value) return NULL;
 
@@ -93,6 +94,8 @@ json_value_t* json_new_array() {
   return array;
 }
 
+// JSON MANIPULATION
+
 void json_object_add(json_value_t* object_el, char* key, json_value_t* value) {
   if (object_el->type != JSON_OBJECT || object_el->object == NULL) {
     printf("Error appending %s to object: Element is not a valid object", key);
@@ -108,7 +111,7 @@ void json_object_add(json_value_t* object_el, char* key, json_value_t* value) {
 
   new_el->key = strdup(key);
 
-  if (!new_el->value) {
+  if (!new_el->key) {
     free(new_el);
     return;
   }
@@ -136,7 +139,9 @@ void json_array_add(json_value_t* array_el, json_value_t* value) {
   array_el->array->size++;
 }
 
-void json_free(json_object_t*);
+// JSON FREE
+
+void json_object_free(json_object_t*);
 void json_array_free(json_array_t*);
 
 void json_value_free(json_value_t* value) {
@@ -145,7 +150,7 @@ void json_value_free(json_value_t* value) {
   json_type_t type = value->type;
   switch (type) {
     case JSON_OBJECT:
-      json_free(value->object);
+      json_object_free(value->object);
       break;
     case JSON_ARRAY:
       json_array_free(value->array);
@@ -176,7 +181,7 @@ void json_array_free(json_array_t* array) {
   free(array);
 }
 
-void json_free(json_object_t* object) {
+void json_object_free(json_object_t* object) {
   if (!object) return;
 
   json_element_t* curr_el = object->head;
@@ -192,4 +197,116 @@ void json_free(json_object_t* object) {
   }
 
   free(object);
+}
+
+void json_free(json_value_t* json) {
+  if (!json) return;
+
+  if (json->type != JSON_OBJECT) {
+    puts("json_free requires a json_value_t*");
+    return;
+  }
+
+  json_object_free(json->object);
+  free(json);
+}
+
+// JSON PRINT
+
+#define INITIAL_CAPACITY 50
+#define GROWTH_FACTOR 2
+
+void string_append(char** buffer, size_t *capacity, char* suffix) {
+  if (!buffer || !suffix) return;
+
+  size_t new_len = strlen(suffix) + strlen(*buffer) + 1;
+
+  if (new_len > *capacity) {
+    *capacity = new_len * GROWTH_FACTOR;
+    char* new_buffer = realloc(*buffer, *capacity);
+
+    if (!new_buffer) return;
+    *buffer = new_buffer;
+  }
+
+  strcat(*buffer, suffix);
+}
+
+void json_object_stringify(char** str, size_t* capacity, json_object_t* object);
+void json_array_stringify(char** str, size_t* capacity, json_array_t* object);
+
+void json_value_stringify(char** str, size_t* capacity, json_value_t* el) {
+  char numeric_string[48];
+
+  switch (el->type) {
+    case JSON_STRING:
+      string_append(str, capacity, "\"");
+      string_append(str, capacity, el->string);
+      string_append(str, capacity, "\"");
+      break;
+    case JSON_NULL:
+      string_append(str, capacity, "null");
+      break;
+    case JSON_INTEGER:
+      sprintf(numeric_string, "%ld", el->integer);
+      string_append(str, capacity, numeric_string);
+      break;
+    case JSON_DECIMAL:
+      sprintf(numeric_string, "%.7f", el->decimal);
+      string_append(str, capacity, numeric_string);
+      break;
+    case JSON_BOOLEAN:
+      string_append(str, capacity, el->boolean ? "true" : "false");
+      break;
+    case JSON_ARRAY:
+      json_array_stringify(str, capacity, el->array);
+      break;
+    case JSON_OBJECT:
+      json_object_stringify(str, capacity, el->object);
+  }
+}
+
+void json_array_stringify(char** str, size_t* capacity, json_array_t* array) {
+  if (!array) return;
+  string_append(str, capacity, "[");
+  for (int i = 0; i < array->size; i++) {
+    json_value_stringify(str, capacity, array->items[i]);
+    if (i != array->size - 1) {
+      string_append(str, capacity, ",");
+    }
+  }
+  string_append(str, capacity, "]");
+}
+
+void json_object_stringify(char** str, size_t* capacity, json_object_t* object) {
+  if (!object) return;
+
+  json_element_t* curr_el = object->head;
+
+  string_append(str, capacity, "{");
+  while (curr_el) {
+    string_append(str, capacity, "\"");
+    string_append(str, capacity, curr_el->key);
+    string_append(str, capacity, "\":");
+    json_value_stringify(str, capacity, curr_el->value);
+    curr_el = curr_el->next;
+    if (curr_el) string_append(str, capacity, ",");
+  }
+  string_append(str, capacity, "}");
+}
+
+void json_print(json_value_t* json) {
+  if (!json) return;
+
+  if (json->type != JSON_OBJECT) {
+    puts("json_print requires a json_value_t*");
+    return;
+  }
+  size_t initial_capacity = INITIAL_CAPACITY;
+  char* json_string = calloc(initial_capacity, sizeof(char));
+
+  json_object_stringify(&json_string, &initial_capacity, json->object);
+
+  puts(json_string);
+  free(json_string);
 }

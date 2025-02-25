@@ -20,7 +20,7 @@ typedef struct json_array_t json_array_t;
 typedef struct{
   json_type_t type;
   union {
-    int integer;
+    long integer;
     double decimal;
     char* string;
     int boolean;
@@ -46,13 +46,15 @@ struct json_object_t {
 };
 
 json_value_t* json_new_object();
-json_value_t* json_new_int(int);
+json_value_t* json_new_int(long);
 json_value_t* json_new_decimal(double);
 json_value_t* json_new_string(char*);
 json_value_t* json_new_bool(int);
+json_value_t* json_new_null();
 json_value_t* json_new_array();
 void json_object_add(json_value_t*, char*, json_value_t*);
 void json_array_add(json_value_t*, json_value_t*);
-void json_free(json_object_t*);
+void json_free(json_value_t*);
+void json_print(json_value_t*);
 
 #endif
