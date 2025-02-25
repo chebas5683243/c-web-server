@@ -215,6 +215,7 @@ void json_free(json_value_t* json) {
 
 #define INITIAL_CAPACITY 50
 #define GROWTH_FACTOR 2
+#define NUMERIC_CAPACITY 48
 
 void string_append(char** buffer, size_t *capacity, char* suffix) {
   if (!buffer || !suffix) return;
@@ -236,7 +237,7 @@ void json_object_stringify(char** str, size_t* capacity, json_object_t* object);
 void json_array_stringify(char** str, size_t* capacity, json_array_t* object);
 
 void json_value_stringify(char** str, size_t* capacity, json_value_t* el) {
-  char numeric_string[48];
+  char numeric_string[NUMERIC_CAPACITY];
 
   switch (el->type) {
     case JSON_STRING:
@@ -248,11 +249,11 @@ void json_value_stringify(char** str, size_t* capacity, json_value_t* el) {
       string_append(str, capacity, "null");
       break;
     case JSON_INTEGER:
-      sprintf(numeric_string, "%ld", el->integer);
+      snprintf(numeric_string, NUMERIC_CAPACITY, "%ld", el->integer);
       string_append(str, capacity, numeric_string);
       break;
     case JSON_DECIMAL:
-      sprintf(numeric_string, "%.7f", el->decimal);
+      snprintf(numeric_string, NUMERIC_CAPACITY, "%.7f", el->decimal);
       string_append(str, capacity, numeric_string);
       break;
     case JSON_BOOLEAN:
