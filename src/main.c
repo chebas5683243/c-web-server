@@ -1,29 +1,17 @@
-#include "router.h"
-#include "webserver.h"
+#include "http-helper.h"
 #include "json.h"
+#include "webserver.h"
 #include <signal.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PORT 42069
 
 server_t *server;
 
-void get_hello_world(http_request_t* req, http_response_t* res) {
-  puts(req->resource);
-  puts("Hello World! wow");
-}
-
-void handle_sigint() {
-  printf("\nCaught SIGINT! Cleaning up...\n");
-  if (server) {
-    server_free(server);
-    server = NULL;
-  }
-  exit(0);
-}
-
-int main() {
+void handler(http_request_t *req, int socket_fd) {
   json_value_t* addr = json_new_object();
   json_object_add(addr, "country", json_new_string("US"));
   json_object_add(addr, "state", json_new_string("California"));
@@ -42,29 +30,55 @@ int main() {
   json_object_add(user, "heigth", json_new_decimal(1.95));
   json_object_add(user, "additional-info", json_new_null());
 
-  json_print(user);
+  char* json_string = json_stringify(user);
 
+  char json_string_size[48];
+  snprintf(json_string_size, 48, "%ld", strlen(json_string));
+
+  http_header_t headers[] = {
+    {"Content-Type", "application/json"},
+    {"Connection", "close"},
+    {"Content-Length", json_string_size}
+  };
+
+  http_response_t* response = http_response_new(200, headers, 3, json_string);
+  char response_string[10000];
+  http_response_stringify(response, response_string, 10000);
+
+  send(socket_fd, response_string, strlen(response_string), 0);
+
+  free(json_string);
+  free(response);
   json_free(user);
+}
 
+void handle_sigint() {
+  printf("\nCaught SIGINT! Cleaning up...\n");
+  if (server) {
+    server_free(server);
+    server = NULL;
+  }
+  exit(0);
+}
 
-  // signal(SIGINT, handle_sigint);
+int main() {
+  signal(SIGINT, handle_sigint);
 
-  // router_t* router = router_new();
+  router_t* router = router_new();
 
-  // router_add_route(router, route_new("GET", "/hello-world", get_hello_world));
-  // router_add_route(router, route_new("GET", "/", get_hello_world));
-  // router_add_route(router, route_new("GET", "/atest", get_hello_world));
-  // router_add_route(router, route_new("POST", "/test", get_hello_world));
-  // router_add_route(router, route_new("DELETE", "/dtest", get_hello_world));
-  // router_add_route(router, route_new("GET", "/ztest", get_hello_world));
+  router_add_route(router, route_new("GET", "/hello-world", handler));
+  router_add_route(router, route_new("GET", "/", handler));
+  router_add_route(router, route_new("GET", "/atest", handler));
+  router_add_route(router, route_new("POST", "/test", handler));
+  router_add_route(router, route_new("DELETE", "/dtest", handler));
+  router_add_route(router, route_new("GET", "/ztest", handler));
 
-  // router_prepare(router);
+  router_prepare(router);
 
-  // server = server_new(PORT, router);
-  // if (!server) return 1;
+  server = server_new(PORT, router);
+  if (!server) return 1;
 
-  // server_run(server);
+  server_run(server);
 
   return 0;
 }
-

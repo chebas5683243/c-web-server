@@ -3,11 +3,7 @@
 
 #include "http-helper.h"
 
-typedef struct {
-
-} http_response_t;
-
-typedef void (*http_handler_t)(http_request_t*, http_response_t*);
+typedef void (*http_handler_t)(http_request_t* request, int socket_fd);
 
 typedef struct {
   char* method;

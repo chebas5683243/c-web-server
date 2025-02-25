@@ -26,8 +26,8 @@ void parse_http_request(const char* raw_request, http_request_t* request) {
 
     while (*value == ' ') value++;
 
-    strncpy(request->headers[request->header_count].key, key, MAX_KEY_LENGTH);
-    strncpy(request->headers[request->header_count].value, value, MAX_VALUE_LENGTH);
+    request->headers[request->header_count].key = strdup(key);
+    request->headers[request->header_count].value = strdup(value);
     request->header_count++;
   }
 
@@ -43,4 +43,53 @@ void print_http_request(http_request_t *request) {
   for (int i = 0; i < request->header_count; i++) {
     printf("  %s: %s\n", request->headers[i].key, request->headers[i].value);
   }
+}
+
+void http_request_free(http_request_t *request) {
+  if (!request) return;
+  for (int i = 0; i < request->header_count; i++) {
+    free(request->headers[i].key);
+    free(request->headers[i].value);
+  }
+}
+
+http_response_t *http_response_new(int status, http_header_t *headers, int header_count, const char *body) {
+  http_response_t *response = malloc(sizeof(http_response_t));
+  if (!response) return NULL;
+
+  response->status = status;
+  response->header_count = header_count;
+  response->body = body ? strdup(body) : NULL;
+
+  for (size_t i = 0; i < header_count && i < MAX_HEADERS; i++) {
+    response->headers[i] = headers[i];
+  }
+
+  return response;
+}
+
+void http_response_free(http_response_t *response) {
+  if (!response) return;
+
+  for (size_t i = 0; i < response->header_count; i++) {
+    free(response->headers[i].key);
+    free(response->headers[i].value);
+  }
+
+  free(response->body);
+  free(response);
+}
+
+void http_response_stringify(http_response_t *response, char *buffer, size_t buffer_size) {
+  if (!response || !buffer) return;
+
+  snprintf(buffer, buffer_size, "HTTP/1.1 %d\r\n", response->status);
+  size_t offset = strlen(buffer);
+
+  for (size_t i = 0; i < response->header_count; i++) {
+    snprintf(buffer + offset, buffer_size - offset, "%s: %s\r\n", response->headers[i].key, response->headers[i].value);
+    offset = strlen(buffer);
+  }
+
+  snprintf(buffer + offset, buffer_size - offset, "\r\n%s", response->body ? response->body : "");
 }

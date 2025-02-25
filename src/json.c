@@ -296,18 +296,17 @@ void json_object_stringify(char** str, size_t* capacity, json_object_t* object) 
   string_append(str, capacity, "}");
 }
 
-void json_print(json_value_t* json) {
-  if (!json) return;
+char* json_stringify(json_value_t* json) {
+  if (!json) return "";
 
   if (json->type != JSON_OBJECT) {
     puts("json_print requires a json_value_t*");
-    return;
+    return "";
   }
   size_t initial_capacity = INITIAL_CAPACITY;
   char* json_string = calloc(initial_capacity, sizeof(char));
 
   json_object_stringify(&json_string, &initial_capacity, json->object);
 
-  puts(json_string);
-  free(json_string);
+  return json_string;
 }

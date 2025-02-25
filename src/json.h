@@ -55,6 +55,6 @@ json_value_t* json_new_array();
 void json_object_add(json_value_t*, char*, json_value_t*);
 void json_array_add(json_value_t*, json_value_t*);
 void json_free(json_value_t*);
-void json_print(json_value_t*);
+char* json_stringify(json_value_t*);
 
 #endif

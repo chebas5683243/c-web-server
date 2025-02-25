@@ -80,28 +80,15 @@ void* process_request(void* args) {
     return NULL;
   }
 
-  printf("Count: %d\n", (int)count);
-
   print_separator();
-
   http_request_t request;
   parse_http_request(buffer, &request);
-
   print_http_request(&request);
-
-  const char *response =
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: application/json\r\n"
-    "Content-Length: 13\r\n"
-    "\r\n"
-    "{\"test\": 123}";
 
   http_handler_t handler = get_request_handler(ctx->router, &request);
 
-  if (handler) handler(&request, NULL);
+  if (handler) handler(&request, ctx->socket_fd);
   else puts("Invalid path");
-
-  send(ctx->socket_fd, response, strlen(response), 0);
 
   print_section("Connection closed");
   puts("\n");
@@ -109,6 +96,7 @@ void* process_request(void* args) {
   close(ctx->socket_fd);
 
   free(ctx);
+  http_request_free(&request);
 
   return NULL;
 }
